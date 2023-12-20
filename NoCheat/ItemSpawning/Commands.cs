@@ -22,7 +22,7 @@ namespace NoCheat.ItemSpawning
         };
 
         private static readonly string[] CoinDenominationNames = {"platinum", "gold", "silver", "copper"};
-        private static readonly int[] CoinDenominationStacks = {999, 99, 99, 99};
+        private static readonly int[] CoinDenominationStacks = {9999, 99, 99, 99};
         private static readonly int[] CoinDenominationValues = {1_00_00_00, 1_00_00, 1_00, 1};
 
         private static readonly int[] DyeIds =
@@ -147,7 +147,7 @@ namespace NoCheat.ItemSpawning
                 var itemId = items[i].type;
                 // We may have to send an update if the item is empty since coins or defender medals may have been there
                 // originally.
-                if (itemId == 0 || itemId >= ItemID.CopperCoin && itemId <= ItemID.PlatinumCoin ||
+                if (itemId != null && itemId == 0 || itemId >= ItemID.CopperCoin && itemId <= ItemID.PlatinumCoin ||
                     itemId == ItemID.DefenderMedal)
                 {
                     player.SendData(PacketTypes.PlayerSlot, "", player.Index, i);
@@ -200,10 +200,25 @@ namespace NoCheat.ItemSpawning
             }
 
             var dyeId = dyeIds[_random.Next(dyeIds.Count)];
-            player.GiveItem(dyeId, "", tplayer.width, tplayer.height, 3);
+            player.GiveItem(dyeId, 3, -1);
             player.SendSuccessMessage("Traded strange plant for dyes.");
         }
-
+public bool HasDiscountCard(TSPlayer player)
+{
+    // get the player's inventory as a list of items
+    var inventory = player.TPlayer.inventory.ToList();
+    // loop through the inventory and check if any item has the ID 4950
+    foreach (var item in inventory)
+    {
+        if (item.netID == 854)
+        {
+            // return true if the item is found
+            return true;
+        }
+    }
+    // return false if the item is not found
+    return false;
+}
         private void NpcBuy(CommandArgs args)
         {
             var parameters = args.Parameters;
@@ -240,7 +255,7 @@ namespace NoCheat.ItemSpawning
 
             var tplayer = player.TPlayer;
             // The discount card should only affect coins.
-            var price = amount * (int)((tplayer.discount && shopItem.shopSpecialCurrency == -1 ? 0.8 : 1.0) *
+            var price = amount * (int)((HasDiscountCard(player) && shopItem.shopSpecialCurrency == -1 ? 0.8 : 1.0) *
                                        shopItem.GetStoreValue());
             var priceText = GetPriceText(price, shopItem.shopSpecialCurrency);
 
@@ -258,7 +273,7 @@ namespace NoCheat.ItemSpawning
 
                 UpdatePlayerCurrency(player);
 
-                player.GiveItem(shopItem.type, "", tplayer.width, tplayer.height, amount, -1);
+                player.GiveItem(shopItem.type, amount, -1);
                 player.SendSuccessMessage($"Purchased {shopItem.GetColoredName()}.");
             });
             player.AddResponse("no", args2 =>
@@ -311,7 +326,7 @@ namespace NoCheat.ItemSpawning
                         var amount = Math.Min(CoinDenominationStacks[i], price / CoinDenominationValues[i]);
                         Debug.Assert(amount > 0, "Amount must be positive.");
                         price -= amount * CoinDenominationValues[i];
-                        player.GiveItem(ItemID.PlatinumCoin - i, "", tplayer.width, tplayer.height, amount);
+                        player.GiveItem(ItemID.PlatinumCoin - i, amount, -1);
                     }
                 }
 
@@ -338,7 +353,7 @@ namespace NoCheat.ItemSpawning
             }
 
             var tplayer = player.TPlayer;
-            var price = (int)((tplayer.discount ? 0.8 : 1.0) * selectedItem.value) / 3;
+            var price = (int)((HasDiscountCard(player)? 0.8 : 1.0) * selectedItem.value) / 3;
             var priceText = GetPriceText(price);
 
             player.SendInfoMessage($"Reforge cost of {selectedItem.GetColoredName()}:{priceText}");

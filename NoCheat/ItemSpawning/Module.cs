@@ -168,7 +168,7 @@ namespace NoCheat.ItemSpawning
         private void OnGamePostInitialize(EventArgs args)
         {
             var items = new List<Item>();
-            for (var i = 0; i < Main.maxItemTypes; ++i)
+            for (var i = 0; i <  Terraria.ID.ItemID.Count; ++i)
             {
                 var item = new Item();
                 item.SetDefaults(i);
@@ -238,7 +238,7 @@ namespace NoCheat.ItemSpawning
                     case PacketTypes.ChestItem:
                         OnUpdateChestItem(player, reader);
                         return;
-                    case PacketTypes.TileKill:
+                    case PacketTypes.PlaceChest:
                         OnUpdateChest(player, reader);
                         return;
                     case PacketTypes.NpcTalk:
@@ -360,11 +360,11 @@ namespace NoCheat.ItemSpawning
                 var stackSize = 1;
                 if (itemId == ItemID.BombFish)
                 {
-                    stackSize = player.TPlayer.FishingLevel() / 20 + 7;
+                    stackSize = player.TPlayer.fishingSkill / 20 + 7;
                 }
                 else if (itemId == ItemID.FrostDaggerfish)
                 {
-                    stackSize = player.TPlayer.FishingLevel() / 4 + 31;
+                    stackSize = player.TPlayer.fishingSkill / 4 + 31;
                 }
                 var balanceSheet = player.GetOrCreateBalanceSheet();
                 balanceSheet.AddTransaction(Transaction.WorldSlot, itemId, stackSize);
@@ -456,7 +456,13 @@ namespace NoCheat.ItemSpawning
 
         private void OnStrikeNpc(TSPlayer player)
         {
-            if (player.TPlayer.coins)
+            bool overFlowing;
+        long num1 = Terraria.Utils.CoinsCount(out overFlowing, player.TPlayer.bank.item);
+        long num2 = Terraria.Utils.CoinsCount(out overFlowing, player.TPlayer.bank2.item);
+        long num3 = Terraria.Utils.CoinsCount(out overFlowing, player.TPlayer.bank3.item);
+        long num4 = Terraria.Utils.CoinsCount(out overFlowing, player.TPlayer.bank4.item);
+        long count = Terraria.Utils.CoinsCombineStacks(out overFlowing, num1, num2, num3, num4);
+            if (count > 0L)
             {
                 var balanceSheet = player.GetOrCreateBalanceSheet();
                 balanceSheet.ForgetDebit(ItemID.CopperCoin, 10_00_00);
@@ -626,6 +632,7 @@ namespace NoCheat.ItemSpawning
             }
 
             var balanceSheet = player.GetOrCreateBalanceSheet();
+            
             if (item.NetId == itemId)
             {
                 balanceSheet.AddTransaction(1000 + itemIndex, item.NetId, item.Stack - stackSize, item.PrefixId);
@@ -640,7 +647,7 @@ namespace NoCheat.ItemSpawning
         private void OnUpdateInventory(TSPlayer player, BinaryReader reader)
         {
             reader.ReadByte();
-            var slot = reader.ReadByte();
+            var slot = reader.ReadInt16();
             var stackSize = reader.ReadInt16();
             var prefix = reader.ReadByte();
             var itemId = reader.ReadInt16();
@@ -648,18 +655,18 @@ namespace NoCheat.ItemSpawning
             var tplayer = player.TPlayer;
             var items = tplayer.inventory.Concat(tplayer.armor).Concat(tplayer.dye).Concat(tplayer.miscEquips)
                 .Concat(tplayer.miscDyes).Concat(tplayer.bank.item).Concat(tplayer.bank2.item)
-                .Concat(new[] {tplayer.trashItem}).Concat(tplayer.bank3.item);
+                .Concat(new[] {tplayer.trashItem}).Concat(tplayer.bank3.item).Concat(tplayer.bank4.item).Concat(tplayer.Loadouts[0].Armor).Concat(tplayer.Loadouts[0].Dye).Concat(tplayer.Loadouts[1].Armor).Concat(tplayer.Loadouts[1].Dye).Concat(tplayer.Loadouts[2].Armor).Concat(tplayer.Loadouts[2].Dye);
             var item = items.ElementAt(slot);
 
             var balanceSheet = player.GetOrCreateBalanceSheet();
-            if (item.type == itemId)
+            if (item != null && item.type == itemId)
             {
                 balanceSheet.AddTransaction(slot, item.type, item.stack - stackSize, item.prefix);
             }
             else
             {
                 // Don't credit the player for a trashed item that gets overriden.
-                if (slot != Transaction.TrashCanSlot || itemId == 0)
+                if (item != null && (slot != Transaction.TrashCanSlot || itemId == 0 ))
                 {
                     balanceSheet.AddTransaction(slot, item.type, item.stack, item.prefix);
                 }
@@ -676,9 +683,10 @@ namespace NoCheat.ItemSpawning
             var prefixId = reader.ReadByte();
             reader.ReadByte();
             var itemId = reader.ReadInt16();
-
+            
             if (itemIndex == Main.maxItems)
             {
+                
                 // Ignore hay created by the sickle, up to a certain stack size.
                 if (player.SelectedItem.type == ItemID.Sickle && itemId == ItemID.Hay && stackSize <= 4)
                 {
@@ -772,10 +780,11 @@ namespace NoCheat.ItemSpawning
                 {
                     return;
                 }
-                if (projectileItem.thrown && (tplayer.thrownCost33 || tplayer.thrownCost50))
+                if ( projectileItem.useStyle==1 )
                 {
-                    return;
+                return;
                 }
+
 
                 var balanceSheet = player.GetOrCreateBalanceSheet();
                 balanceSheet.AddTransaction(Transaction.WorldSlot, projectileItem.type, -1);

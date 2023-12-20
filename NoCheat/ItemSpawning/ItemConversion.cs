@@ -545,10 +545,11 @@ namespace NoCheat.ItemSpawning
 
             public OfItemConversion(int itemId, int minStackSize, int maxStackSize)
             {
-                Debug.Assert(itemId > 0, "Item ID must be positive.");
-                Debug.Assert(itemId < ItemID.Count, "Item ID must in range.");
-                Debug.Assert(minStackSize > 0, "Minimum stack size must be positive.");
-                Debug.Assert(maxStackSize >= minStackSize, "Maximum stack size must be at least the minimum.");
+                //Debug.Assert(itemId > 0, "Item ID must be positive.");
+                //Debug.Assert(itemId < Terraria.ID.ItemID.Count, "Item ID must in range.");
+                if (itemId > Terraria.ID.ItemID.Count || itemId < 0 || minStackSize <= 0 || maxStackSize < minStackSize){return;}
+                //Debug.Assert(minStackSize > 0, "Minimum stack size must be positive.");
+                //Debug.Assert(maxStackSize >= minStackSize, "Maximum stack size must be at least the minimum.");
 
                 _itemId = itemId;
                 _minStackSize = minStackSize;

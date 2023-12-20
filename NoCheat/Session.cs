@@ -7,6 +7,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using TShockAPI;
+using System.Globalization;
 
 namespace NoCheat
 {
@@ -41,7 +42,7 @@ namespace NoCheat
         {
             Debug.Assert(player != null, "Player must not be null.");
 
-            var username = player.User?.Name ?? player.Name;
+            var username = player.Account?.Name ?? player.Name;
             var path = Path.Combine("nocheat", $"{username}.session");
             var infractions = File.Exists(path)
                 ? JsonConvert.DeserializeObject<List<Infraction>>(File.ReadAllText(path))
@@ -62,7 +63,7 @@ namespace NoCheat
 
             _infractions.Add(new Infraction(points, DateTime.UtcNow + duration, reason));
 
-            TShock.Log.ConsoleInfo($"[NoCheat] {_player.Name} was given a {points} point infraction for {reason}.");
+            TShock.Log.ConsoleInfo($"[] {_player.Name} was given a {points} point infraction for {reason}.");
             _player.SendWarningMessage($"You were given a {points} point infraction for {reason}.");
             Save();
         }
@@ -82,10 +83,19 @@ namespace NoCheat
             var totalPoints = _infractions.Sum(i => i.Points);
             if (totalPoints > config.PointThreshold && !_player.HasPermission(Permissions.immunetoban))
             {
-                _player.Disconnect($"Banned: {config.BanMessage}");
+                
                 TSPlayer.All.SendInfoMessage($"{_player.Name} was banned for '{config.BanMessage}'.");
-                TShock.Bans.AddBan(_player.IP, _player.Name, _player.UUID, config.BanMessage,
+                /*TShock.Bans.AddBan(_player.IP, _player.Name, _player.UUID, config.BanMessage,
                                    expiration: DateTime.UtcNow.Add(config.BanDuration).ToString("s"));
+                  */var k = DateTime.ParseExact(DateTime.UtcNow.Add(config.BanDuration).ToString("s"), "s", CultureInfo.InvariantCulture);
+			TShock.Bans.InsertBan("ip:" + _player.IP, config.BanMessage, "Hal", DateTime.UtcNow, k);
+			TShock.Bans.InsertBan($"uuid:"+_player.UUID, config.BanMessage, "Hal", DateTime.UtcNow, k);
+            if (_player.Account != null)
+			{
+				TShock.Bans.InsertBan($"acc:"+_player.Account.Name, config.BanMessage, "Hal", DateTime.UtcNow, k);
+			}
+            _player.Disconnect($"Banned: {config.BanMessage}");
+
             }
         }
 
@@ -106,7 +116,7 @@ namespace NoCheat
         /// </summary>
         private void Save()
         {
-            var username = _player.User?.Name ?? _player.Name;
+            var username = _player.Account?.Name ?? _player.Name;
             var path = Path.Combine("nocheat", $"{username}.session");
             File.WriteAllText(path, JsonConvert.SerializeObject(_infractions));
         }

@@ -42,10 +42,11 @@ namespace NoCheat.ItemSpawning.Accounting
         /// <param name="stackSize">The stack size.</param>
         /// <param name="prefixId">The prefix ID, which must be in range.</param>
         public void AddTransaction(int slot, int itemId, int stackSize, byte prefixId = 0)
-        {
-            Debug.Assert(itemId >= 0, "Item ID must be non-negative.");
-            Debug.Assert(itemId < ItemID.Count, "Item ID must be in range.");
-            Debug.Assert(prefixId < PrefixID.Count, "Prefix ID must be in range.");
+        {//TSPlayer.Server.SendMessage(itemId.ToString(), 255,255,255);
+            //Debug.Assert(itemId >= 0, "Item ID must be non-negative.");
+            //Debug.Assert(itemId < Terraria.ID.ItemID.Count, "Item ID must be in range.");
+            if (itemId > Terraria.ID.ItemID.Count || itemId < 0 || prefixId > Terraria.ID.PrefixID.Count){return;}
+            //Debug.Assert(prefixId < Terraria.ID.PrefixID.Count, "Prefix ID must be in range.");
 
             if (itemId == 0 || stackSize == 0)
             {
@@ -147,9 +148,10 @@ namespace NoCheat.ItemSpawning.Accounting
         public bool ForgetDebit(int itemId, int stackSize, byte prefixId = 0)
         {
             Debug.Assert(itemId >= 0, "Item ID must be non-negative.");
-            Debug.Assert(itemId < ItemID.Count, "Item ID must be in range.");
+            Debug.Assert(itemId < Terraria.ID.ItemID.Count, "Item ID must be in range.");
+            //if (itemId > Terraria.ID.ItemID.Count || itemId < 0 || prefixId > Terraria.ID.PrefixID.Count || stackSize <= 0){return true;}
             Debug.Assert(stackSize > 0, "Stack size must be positive.");
-            Debug.Assert(prefixId < PrefixID.Count, "Prefix ID must be in range.");
+            Debug.Assert(prefixId < Terraria.ID.PrefixID.Count, "Prefix ID must be in range.");
 
             if (itemId == 0 || stackSize == 0)
             {

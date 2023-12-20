@@ -28,10 +28,11 @@ namespace NoCheat
 
         public NoCheatPlugin(Main game) : base(game)
         {
-            Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
+           // System.Diagnostics.Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
             _modules = (from t in Assembly.GetExecutingAssembly().GetTypes()
                         where !t.IsAbstract && t.IsSubclassOf(typeof(NoCheatModule))
                         select (NoCheatModule)Activator.CreateInstance(t, this)).ToList();
+                        
         }
 
         public override string Author => "MarioE";
@@ -107,16 +108,16 @@ namespace NoCheat
             }
 
             var inputPlayerOrUser = parameters[1];
-            var players = TShock.Utils.FindPlayer(inputPlayerOrUser);
-            if (players.Count > 1)
+            var players = TSPlayer.FindByNameOrID(inputPlayerOrUser);
+            if (TShock.Utils.GetActivePlayerCount() > 1)
             {
-                TShock.Utils.SendMultipleMatchError(player, players);
+                player.SendMultipleMatchError(players);
                 return;
             }
 
             IList<Infraction> infractions;
             var name = inputPlayerOrUser;
-            if (players.Count == 0)
+            if (TShock.Utils.GetActivePlayerCount() == 0)
             {
                 var path = Path.Combine("nocheat", $"{inputPlayerOrUser}.session");
                 if (!File.Exists(path))
@@ -199,17 +200,17 @@ namespace NoCheat
             }
 
             var inputPlayerOrUser = parameters[1];
-            var players = TShock.Utils.FindPlayer(inputPlayerOrUser);
-            if (players.Count > 1)
+            var players = TSPlayer.FindByNameOrID(inputPlayerOrUser);
+            if (TShock.Utils.GetActivePlayerCount() > 1)
             {
-                TShock.Utils.SendMultipleMatchError(player, players);
+                player.SendMultipleMatchError(players);
                 return;
             }
 
             Session session = null;
             IList<Infraction> infractions;
             var name = inputPlayerOrUser;
-            if (players.Count == 0)
+            if (TShock.Utils.GetActivePlayerCount() == 0)
             {
                 var path = Path.Combine("nocheat", $"{inputPlayerOrUser}.session");
                 if (!File.Exists(path))
