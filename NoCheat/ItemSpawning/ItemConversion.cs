@@ -114,7 +114,7 @@ namespace NoCheat.ItemSpawning
         /// <summary>
         ///     The mapping from item IDs to conversions.
         /// </summary>
-        public static readonly IDictionary<int, ItemConversion> ItemIdToConversion = new Dictionary<int, ItemConversion>
+        public static readonly Dictionary<int, ItemConversion> ItemIdToConversion = new Dictionary<int, ItemConversion>
         {
             [ItemID.EmptyBucket] = Either(
                 Of(ItemID.WaterBucket),

@@ -44,7 +44,7 @@ namespace NoCheat
         /// <returns>The value, or the default value.</returns>
         [Pure]
         public static TValue Get<TKey, TValue>(
-            [NotNull] this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue = default(TValue))
+            [NotNull] this Dictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue = default(TValue))
         {
             Debug.Assert(dictionary != null, "Dictionary must not be null.");
             Debug.Assert(key != null, "Key must not be null.");
