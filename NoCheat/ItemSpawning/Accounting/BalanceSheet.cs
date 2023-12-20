@@ -158,12 +158,7 @@ namespace NoCheat.ItemSpawning.Accounting
                 return false;
             }
 
-            // Convert all coins into copper coins. This makes our logic for processing coins significantly simpler.
-            while (itemId >= ItemID.SilverCoin && itemId <= ItemID.PlatinumCoin)
-            {
-                --itemId;
-                stackSize *= 100;
-            }
+            
 
             lock (_lock)
             {
@@ -186,7 +181,7 @@ namespace NoCheat.ItemSpawning.Accounting
                 return succeeded;
             }
         }
-
+        
         /// <summary>
         ///     Updates the balance sheet using the specified configuration.
         /// </summary>

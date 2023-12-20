@@ -373,7 +373,9 @@ namespace NoCheat.ItemSpawning
 
         private void OnSendTileSquare(TSPlayer player, BinaryReader reader)
         {
-            var size = reader.ReadUInt16();
+            reader.ReadUInt16();
+            reader.ReadByte();
+            var size = reader.ReadInt16();
             if (size != 1)
             {
                 return;
@@ -462,10 +464,10 @@ namespace NoCheat.ItemSpawning
         long num3 = Terraria.Utils.CoinsCount(out overFlowing, player.TPlayer.bank3.item);
         long num4 = Terraria.Utils.CoinsCount(out overFlowing, player.TPlayer.bank4.item);
         long count = Terraria.Utils.CoinsCombineStacks(out overFlowing, num1, num2, num3, num4);
-            if (count > 0L)
+            if (count > 0)
             {
                 var balanceSheet = player.GetOrCreateBalanceSheet();
-                balanceSheet.ForgetDebit(ItemID.CopperCoin, 10_00_00);
+                balanceSheet.ForgetDebit(ItemID.CopperCoin, (int)count);
             }
             if (player.TPlayer.setNebula)
             {
@@ -677,8 +679,10 @@ namespace NoCheat.ItemSpawning
         private void OnUpdateItem(TSPlayer player, BinaryReader reader)
         {
             var itemIndex = reader.ReadInt16();
-            reader.ReadVector2();
-            reader.ReadVector2();
+            reader.ReadSingle();
+            reader.ReadSingle();
+            reader.ReadSingle();
+            reader.ReadSingle();
             var stackSize = reader.ReadInt16();
             var prefixId = reader.ReadByte();
             reader.ReadByte();
@@ -733,7 +737,8 @@ namespace NoCheat.ItemSpawning
         {
             reader.ReadByte();
             var buffId = reader.ReadByte();
-            reader.ReadVector2();
+            reader.ReadSingle();
+            reader.ReadSingle();
 
             if (NebulaBuffIdToItemId.TryGetValue(buffId, out var itemId))
             {
@@ -746,8 +751,10 @@ namespace NoCheat.ItemSpawning
         private void OnUpdateProjectile(TSPlayer player, BinaryReader reader)
         {
             var identity = reader.ReadInt16();
-            reader.ReadVector2();
-            reader.ReadVector2();
+            reader.ReadSingle();
+            reader.ReadSingle();
+            reader.ReadSingle();
+            reader.ReadSingle();
             reader.ReadSingle();
             reader.ReadInt16();
             reader.ReadByte();
